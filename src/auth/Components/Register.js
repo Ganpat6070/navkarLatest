@@ -20,6 +20,8 @@ const defaultTheme = createTheme();
 
 export function Register() {
   const [errorMessage, setErrorMessage] = useState("");
+  const [message, setmessage] = useState("");
+
   const dispatch = useDispatch();
 
   const {
@@ -48,22 +50,46 @@ export function Register() {
             <Typography component="h1" variant="h5">
               User Registeration
             </Typography>
-            {errorMessage && <p className="text-green-500">{errorMessage}</p>}
+
             <Box
               component="form"
-              onSubmit={handleSubmit((data) => {
-                // console.log(data);
-                const response = dispatch(
-                  registerUserAsync({
-                    firstName: data.firstname,
-                    lastName: data.lastname,
-                    email: data.email,
-                    password: data.password,
-                  })
-                );
-                console.log("regResponse", response);
-                navigate("/login");
+              onSubmit={handleSubmit(async (data) => {
+                try {
+                  const response = await dispatch(
+                    registerUserAsync({
+                      firstName: data.firstname,
+                      lastName: data.lastname,
+                      email: data.email,
+                      password: data.password,
+                    })
+                  );
+
+                  console.log("res", response);
+                  const resStatus = response.payload.statusCode;
+                  console.log("status", resStatus);
+                  if (resStatus === 201) {
+                    setmessage(response.payload.message);
+                    setTimeout(() => {
+                      navigate("/login");
+                    }, 1000);
+                  } else if (resStatus === 400) {
+                    console.log("error", response.payload.message);
+                    setErrorMessage(response.payload.message);
+                    // console.log("error", response?.data?.message);
+                    // setErrorMessage(response?.data?.message);
+                  } else {
+                    console.log("Unknown error occurred");
+                    setErrorMessage("Unknown error occurred");
+                  }
+                } catch (error) {
+                  console.error(error);
+                }
               })}
+              // console.log("regResponse", response.status);
+              // const resStatus = await response.status
+              // console.log(response)
+              // navigate("/login");
+              // })}
               noValidate
               sx={{ mt: 1 }}
             >
@@ -149,6 +175,13 @@ export function Register() {
               {errors.confirmpassword && errors.confirmpassword.message && (
                 <p style={{ color: "red" }}>{errors.confirmpassword.message}</p>
               )}
+
+              {
+                <p style={{color: 'green'}}>
+                  {errorMessage ? errorMessage : ""}
+                </p>
+              }
+              {<p style={{color: 'green'}}>{message ? message : ""}</p>}
               <Button
                 type="submit"
                 fullWidth

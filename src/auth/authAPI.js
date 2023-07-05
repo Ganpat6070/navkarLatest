@@ -15,7 +15,7 @@ export function registerUser(userData) {
       }
 
       const data = await response.json();
-      resolve({ message: data.message, data });
+      resolve({ data });
     } catch (error) {
       reject(error);
     }
@@ -36,7 +36,7 @@ export function authenticateUser(authDetail) {
       localStorage.setItem("token", token);
       resolve({ data });
     } else {
-      resolve({ message: data.message });
+      resolve({ data });
     }
   });
 }

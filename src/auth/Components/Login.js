@@ -19,15 +19,14 @@ const defaultTheme = createTheme();
 export function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [error, setError] = useState("");
-
+  const [errorMessage, setErrorMessage] = useState("");
+  const [message, setmessage] = useState("");
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm();
-
 
   return (
     <div>
@@ -49,15 +48,31 @@ export function Login() {
 
             <Box
               component="form"
-              onSubmit={handleSubmit((data) => {
-                console.log(data);
-               const res = dispatch(
-                  authenticateUserAsync({
-                    email: data.email,
-                    password: data.password,
-                  })
-                );
-               console.log('res', res);
+              onSubmit={handleSubmit(async (data) => {
+                try {
+                  const response = await dispatch(
+                    authenticateUserAsync({
+                      email: data.email,
+                      password: data.password,
+                    })
+                  );
+
+                  console.log("res", response);
+                  const resStatus = response.payload.statusCode;
+                  console.log("status", resStatus);
+                  if (resStatus === 200) {
+                    // Login successful, navigate to the desired page
+                    navigate("/table");
+                  } else if (resStatus === 400) {
+                    console.log("error", response.payload.message);
+                    setErrorMessage(response.payload.message);
+                  } else {
+                    console.log("Unknown error occurred");
+                    setErrorMessage("Unknown error occurred");
+                  }
+                } catch (error) {
+                  console.error(error);
+                }
               })}
               noValidate
               sx={{ mt: 1 }}
@@ -100,6 +115,11 @@ export function Login() {
               />
               {errors.password && errors.password.message && (
                 <p className="text-red-500">{errors.password.message}</p>
+              )}
+              {errorMessage ? (
+                <span style={{color: 'red'}}>{errorMessage}</span>
+              ) : (
+                ""
               )}
               <Button
                 type="submit"
