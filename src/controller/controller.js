@@ -12,6 +12,7 @@ const userRegistration = asyncHandler(async (req, res) => {
 
   if (existingUser) {
     res.status(400).json({
+      statusCode: 400,
       message: "User already exists",
     });
     return;
@@ -23,12 +24,18 @@ const userRegistration = asyncHandler(async (req, res) => {
     email,
     password,
   });
+
   if (user) {
-    res
-      .status(201)
-      .json({ message: "user registered successfully!", data: user });
+    res.status(201).json({
+      statusCode: 201,
+      message: "User registered successfully!",
+      data: user,
+    });
   } else {
-    res.status(400).json({ message: "Sorry, some error occurred" });
+    res.status(400).json({
+      statusCode: 400,
+      message: "Sorry, some error occurred",
+    });
   }
 });
 
@@ -38,19 +45,23 @@ const authUser = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    res.status(401).json({ message: "user not found" });
+    res.status(401).json({ statusCode: 400, message: "user not found" });
     return;
   }
   if (password) {
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) {
-      res.status(401).json("Invalid password");
+      res
+        .status(401)
+        .json({ statusCode: 401, message: "passwords do not match" });
       return;
     }
   }
 
   const token = jwt.sign({ id: user.id }, jwtSecret, { expiresIn: "3d" });
-  res.status(200).json({ message: "Logged in succesfully ", token: token });
+  res
+    .status(200)
+    .json({ statusCode: 200, message: "Logged in succesfully ", token: token });
 });
 
 const fetchTasks = asyncHandler(async (req, res) => {
@@ -95,7 +106,6 @@ const generateTask = asyncHandler(async (req, res) => {
     tasks: userFound.tasks,
   });
 });
-
 
 const updateTaskApi = asyncHandler(async (req, res) => {
   const { _id, fullName, email, gender, status } = req.body;
